@@ -1,3 +1,5 @@
+// !Not in use this file
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 // import fetch, { Headers, Request, Response } from "node-fetch";
 import dotenv from "dotenv";

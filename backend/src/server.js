@@ -39,10 +39,10 @@ app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "Server is running" });
 });
 
-const port = process.env.PORT || 3175;
+const port = process.env.PORT;
 
 app.listen(port, () => {
-  console.log(`✅ Server running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
 
 // Nightly logout: increment tokenVersion for all users at midnight server time

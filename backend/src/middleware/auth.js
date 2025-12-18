@@ -6,7 +6,10 @@ export const protect = async (req, res, next) => {
     let token;
 
     // Check for token in Authorization header
-    if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
       token = req.headers.authorization.split(" ")[1];
     }
 
@@ -29,14 +32,21 @@ export const protect = async (req, res, next) => {
       });
     }
     if (user.tokenVersion !== (decoded.tokenVersion ?? 0)) {
-      return res.status(401).json({ success: false, message: "Session expired. Please login again." });
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please login again.",
+      });
     }
     // Extra guard: token must exist on user and match, and user must be active
     if (!user.isActive) {
-      return res.status(401).json({ success: false, message: "User is not active. Please login." });
+      return res
+        .status(401)
+        .json({ success: false, message: "User is not active. Please login." });
     }
     if (!user.token || user.token !== token) {
-      return res.status(401).json({ success: false, message: "Invalid session token." });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid session token." });
     }
 
     req.user = user;
@@ -48,4 +58,3 @@ export const protect = async (req, res, next) => {
     });
   }
 };
-

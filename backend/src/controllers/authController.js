@@ -52,7 +52,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     )
   );
 } else {
-  console.log("⚠️  Google OAuth credentials not configured. Google login will be disabled.");
+  console.log(
+    "⚠️  Google OAuth credentials not configured. Google login will be disabled."
+  );
 }
 
 // Send OTP for registration/login (accepts email and password)
@@ -88,9 +90,13 @@ export const sendOTP = async (req, res) => {
     } else {
       // For existing user, if password is provided, verify it
       if (password) {
-        const userWithPassword = await User.findOne({ email: email.toLowerCase() }).select("+password");
+        const userWithPassword = await User.findOne({
+          email: email.toLowerCase(),
+        }).select("+password");
         if (userWithPassword && userWithPassword.password) {
-          const isPasswordValid = await userWithPassword.comparePassword(password);
+          const isPasswordValid = await userWithPassword.comparePassword(
+            password
+          );
           if (!isPasswordValid) {
             return res.status(401).json({
               success: false,
@@ -177,8 +183,11 @@ export const verifyOTP = async (req, res) => {
     // Send welcome email (non-blocking, don't fail if email fails)
     const isNewUser = !user.loginHistory || user.loginHistory.length <= 1;
     if (isNewUser) {
-      sendWelcomeEmail(user.email, user.name || "User").catch(err => {
-        console.log("⚠️  Failed to send welcome email (non-critical):", err.message);
+      sendWelcomeEmail(user.email, user.name || "User").catch((err) => {
+        console.log(
+          "⚠️  Failed to send welcome email (non-critical):",
+          err.message
+        );
       });
     }
 
@@ -216,7 +225,9 @@ export const login = async (req, res) => {
     }
 
     // Find user and include password
-    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+password"
+    );
 
     if (!user || !user.password) {
       return res.status(401).json({
@@ -252,8 +263,11 @@ export const login = async (req, res) => {
     // Send welcome email if first login (non-blocking)
     const isFirstLogin = !user.loginHistory || user.loginHistory.length === 0;
     if (isFirstLogin) {
-      sendWelcomeEmail(user.email, user.name || "User").catch(err => {
-        console.log("⚠️  Failed to send welcome email (non-critical):", err.message);
+      sendWelcomeEmail(user.email, user.name || "User").catch((err) => {
+        console.log(
+          "⚠️  Failed to send welcome email (non-critical):",
+          err.message
+        );
       });
     }
 
@@ -301,54 +315,78 @@ export const googleCallback = async (req, res, next) => {
     });
   }
 
-  return passport.authenticate("google", { session: false }, async (err, user) => {
-    if (err || !user) {
-      return res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=auth_failed`);
-    }
-
-    try {
-      // Update last login
-      user.lastLoginAt = new Date();
-      user.loginHistory.push({
-        loginAt: new Date(),
-        ipAddress: req.ip || req.connection.remoteAddress,
-        userAgent: req.headers["user-agent"],
-      });
-      await user.save();
-
-      // Generate JWT token
-      const token = generateToken(user._id, user.tokenVersion || 0);
-      user.token = token;
-      user.isActive = true;
-      await user.save();
-
-      // Send welcome email if first login (non-blocking)
-      const isFirstLogin = !user.loginHistory || user.loginHistory.length <= 1;
-      if (isFirstLogin) {
-        sendWelcomeEmail(user.email, user.name || "User").catch(err => {
-          console.log("⚠️  Failed to send welcome email (non-critical):", err.message);
-        });
+  return passport.authenticate(
+    "google",
+    { session: false },
+    async (err, user) => {
+      if (err || !user) {
+        return res.redirect(
+          `${
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/login?error=auth_failed`
+        );
       }
 
-      // If extension flow, return a tiny HTML that posts the token to opener and closes
-      if (req.query.state === "ext") {
-        return res.send(`<!doctype html><html><body><script>
+      try {
+        // Update last login
+        user.lastLoginAt = new Date();
+        user.loginHistory.push({
+          loginAt: new Date(),
+          ipAddress: req.ip || req.connection.remoteAddress,
+          userAgent: req.headers["user-agent"],
+        });
+        await user.save();
+
+        // Generate JWT token
+        const token = generateToken(user._id, user.tokenVersion || 0);
+        user.token = token;
+        user.isActive = true;
+        await user.save();
+
+        // Send welcome email if first login (non-blocking)
+        const isFirstLogin =
+          !user.loginHistory || user.loginHistory.length <= 1;
+        if (isFirstLogin) {
+          sendWelcomeEmail(user.email, user.name || "User").catch((err) => {
+            console.log(
+              "⚠️  Failed to send welcome email (non-critical):",
+              err.message
+            );
+          });
+        }
+
+        // If extension flow, return a tiny HTML that posts the token to opener and closes
+        if (req.query.state === "ext") {
+          return res.send(`<!doctype html><html><body><script>
           try {
             if (window.opener) {
-              window.opener.postMessage({ source: 'buddy-auth', token: '${token}', email: '${user.email}', name: ${JSON.stringify(user.name || "")} }, '*');
+              window.opener.postMessage({ source: 'buddy-auth', token: '${token}', email: '${
+            user.email
+          }', name: ${JSON.stringify(user.name || "")} }, '*');
             }
           } catch(e) {}
           window.close();
         </script><p>You can close this window.</p></body></html>`);
-      }
+        }
 
-      // Redirect to frontend site with token
-      res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/auth/callback?token=${token}&email=${user.email}&name=${encodeURIComponent(user.name || "")}`);
-    } catch (error) {
-      console.error("Google callback error:", error);
-      res.redirect(`${process.env.FRONTEND_URL || "http://localhost:3000"}/login?error=server_error`);
+        // Redirect to frontend site with token
+        res.redirect(
+          `${
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/auth/callback?token=${token}&email=${
+            user.email
+          }&name=${encodeURIComponent(user.name || "")}`
+        );
+      } catch (error) {
+        console.error("Google callback error:", error);
+        res.redirect(
+          `${
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/login?error=server_error`
+        );
+      }
     }
-  })(req, res, next);
+  )(req, res, next);
 };
 
 // Get current user
@@ -382,7 +420,9 @@ export const logout = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
     user.isActive = false;
     user.token = null;
@@ -392,7 +432,8 @@ export const logout = async (req, res) => {
     res.json({ success: true, message: "Logged out successfully" });
   } catch (error) {
     console.error("Logout error:", error);
-    res.status(500).json({ success: false, message: error.message || "Logout failed" });
+    res
+      .status(500)
+      .json({ success: false, message: error.message || "Logout failed" });
   }
 };
-

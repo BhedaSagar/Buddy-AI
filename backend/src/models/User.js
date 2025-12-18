@@ -121,4 +121,3 @@ userSchema.methods.clearOTP = function () {
 };
 
 export default mongoose.model("User", userSchema);
-

@@ -1,3 +1,5 @@
+// !Not in use this file
+
 import fetch from "node-fetch";
 
 const BASE_URL = "http://localhost:3175/api/auth";
@@ -62,7 +64,7 @@ async function testWithToken(endpoint, method = "GET", body = null, token) {
 // Test Authentication Flow
 async function runTests() {
   console.log("🧪 Testing Authentication APIs\n");
-  console.log("=" .repeat(50));
+  console.log("=".repeat(50));
 
   // Test 1: Send OTP for new user registration
   console.log("\n1️⃣ Testing: Send OTP (New User Registration)");
@@ -79,7 +81,9 @@ async function runTests() {
 
   // Wait a bit for email (in real scenario, check email)
   console.log("\n⏳ Please check your email for OTP...");
-  console.log("💡 For testing, you can check the console logs or database for OTP");
+  console.log(
+    "💡 For testing, you can check the console logs or database for OTP"
+  );
 
   // Test 2: Verify OTP (you'll need to replace with actual OTP from email)
   console.log("\n2️⃣ Testing: Verify OTP");
@@ -97,7 +101,9 @@ async function runTests() {
   }
 
   const token = verifyResult.data.token;
-  console.log(`\n✅ Authentication successful! Token: ${token.substring(0, 20)}...`);
+  console.log(
+    `\n✅ Authentication successful! Token: ${token.substring(0, 20)}...`
+  );
 
   // Test 3: Get current user (protected route)
   console.log("\n3️⃣ Testing: Get Current User (Protected Route)");
@@ -126,4 +132,3 @@ async function runTests() {
 
 // Run tests
 runTests().catch(console.error);
-

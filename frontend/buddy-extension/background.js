@@ -3,14 +3,18 @@ chrome.action.onClicked.addListener(async (tab) => {
   try {
     // Inject CSS first (built by Vite into assets/content.css)
     try {
-      await chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: ["assets/content.css"] });
+      await chrome.scripting.insertCSS({
+        target: { tabId: tab.id },
+        files: ["assets/content.css"],
+      });
     } catch (_) {}
 
     // Inject the content script that mounts the panel
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content.js"] });
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ["content.js"],
+    });
   } catch (e) {
     console.error("Buddy injection failed:", e);
   }
 });
-
-
